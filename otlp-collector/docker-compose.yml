@@ -1,0 +1,16 @@
+version: "3.8"
+
+services:
+  otel-collector:
+    image: otel/opentelemetry-collector:0.143.0  # or a newer tag
+    container_name: otel-collector
+    command: ["--config=/etc/otelcol/config.yaml"]
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otelcol/config.yaml:ro
+    ports:
+      # OTLP HTTP receiver for your apps to send logs
+      - "4318:4318"
+      # Optional: health/metrics/etc if you add these in the config
+      - "13133:13133" # health_check extension
+      - "8888:8888"   # Collector metrics
+    restart: unless-stopped
