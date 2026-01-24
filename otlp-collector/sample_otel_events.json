@@ -1,0 +1,106 @@
+{
+  "resourceLogs": [
+    {
+      "resource": {
+        "attributes": [
+          { "key": "service.name", "value": { "stringValue": "payment-service" } },
+          { "key": "service.namespace", "value": { "stringValue": "payments" } },
+          { "key": "service.instance.id", "value": { "stringValue": "pod-123" } },
+          { "key": "deployment.environment", "value": { "stringValue": "production" } }
+        ]
+      },
+      "scopeLogs": [
+        {
+          "scope": {
+            "name": "io.opentelemetry.contrib.http",
+            "version": "1.0.0"
+          },
+          "logRecords": [
+            {
+              "timeUnixNano": "1733662080123456789",
+              "observedTimeUnixNano": "1733662081123456789",
+              "severityText": "INFO",
+              "severityNumber": 9,
+              "body": {
+                "stringValue": "HTTP POST /clients/api/v4 -> 200"
+              },
+              "attributes": [
+                { "key": "http.method",      "value": { "stringValue": "POST" } },
+                { "key": "http.target",      "value": { "stringValue": "/clients/api/v4?api_key=9834hAHx78ba4g8habsdk&country=GB&format=json&bankcode=110377&account=10218962" } },
+                { "key": "http.scheme",      "value": { "stringValue": "https" } },
+                { "key": "http.route",       "value": { "stringValue": "/clients/api/v4" } },
+                { "key": "http.host",        "value": { "stringValue": "api.iban.com" } },
+                { "key": "http.flavor",      "value": { "stringValue": "1.1" } },
+                { "key": "user_agent.original", "value": { "stringValue": "Mozilla/5.0 ..." } },
+                { "key": "client.address",   "value": { "stringValue": "203.0.113.5" } },
+                { "key": "http.request_content_length", "value": { "intValue": 512 } },
+                { "key": "http.response_content_length", "value": { "intValue": 1024 } },
+                { "key": "http.status_code", "value": { "intValue": 200 } },
+                { "key": "otel.library.name", "value": { "stringValue": "opentelemetry-logger" } },
+                { "key": "trace_id",         "value": { "stringValue": "5b8aa5a2d2c872e8321cf37308d69df2" } },
+                { "key": "span_id",          "value": { "stringValue": "051581bf3cb55c13" } },
+                { "key": "http.url", "value": { "stringValue": "https://api.iban.com/clients/api/v4?api_key=9834hAHx78ba4g8habsdk&country=GB&format=json&bankcode=110377&account=10218962" } },
+                { "key": "http.request.header.user-agent", "value": { "stringValue": "Mozilla/5.0" } },
+                { "key": "http.request.header.content-type", "value": { "stringValue": "application/json" } },
+                { "key": "http.request.header.X-Client-Id", "value": { "stringValue": "041ba848-096c-411d-af05-38f30a0ef42c" } },
+                { "key": "http.response.header.content-length", "value": { "intValue": 1024 }}
+              ],
+              "flags": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "resource": {
+        "attributes": [
+          { "key": "service.name", "value": { "stringValue": "idv-service" } },
+          { "key": "service.namespace", "value": { "stringValue": "identity" } },
+          { "key": "service.instance.id", "value": { "stringValue": "pod-122" } },
+          { "key": "deployment.environment", "value": { "stringValue": "production" } }
+        ]
+      },
+      "scopeLogs": [
+        {
+          "scope": {
+            "name": "io.opentelemetry.contrib.http",
+            "version": "1.0.0"
+          },
+          "logRecords": [
+            {
+              "timeUnixNano": "1733662080123456790",
+              "observedTimeUnixNano": "1733662081123456790",
+              "severityText": "INFO",
+              "severityNumber": 9,
+              "body": {
+                "stringValue": "HTTP POST /identity/validate -> 200"
+              },
+              "attributes": [
+                { "key": "http.method",      "value": { "stringValue": "POST" } },
+                { "key": "http.target",      "value": { "stringValue": "/identity/validate" } },
+                { "key": "http.scheme",      "value": { "stringValue": "https" } },
+                { "key": "http.route",       "value": { "stringValue": "/identity/validate" } },
+                { "key": "http.host",        "value": { "stringValue": "api.risk.lexisnexis.com" } },
+                { "key": "http.flavor",      "value": { "stringValue": "1.1" } },
+                { "key": "user_agent.original", "value": { "stringValue": "Mozilla/5.0 ..." } },
+                { "key": "client.address",   "value": { "stringValue": "203.0.113.5" } },
+                { "key": "http.request_content_length", "value": { "intValue": 2048 } },
+                { "key": "http.response_content_length", "value": { "intValue": 1024 } },
+                { "key": "http.status_code", "value": { "intValue": 200 } },
+                { "key": "otel.library.name", "value": { "stringValue": "opentelemetry-logger" } },
+                { "key": "trace_id",         "value": { "stringValue": "5b8aa5a2d2c872e8321cf37308d69999" } },
+                { "key": "span_id",          "value": { "stringValue": "051581bf3cb55c20" } },
+                { "key": "http.url", "value": { "stringValue": "https://api.risk.lexisnexis.com/identity/validate" } },
+                { "key": "http.request.header.user-agent", "value": { "stringValue": "Mozilla/5.0" } },
+                { "key": "http.request.header.content-type", "value": { "stringValue": "application/json" } },
+                { "key": "http.request.header.X-Client-Id", "value": { "stringValue": "041ba848-096c-411d-af05-38f30a0ef499" } },
+                { "key": "http.response.header.content-length", "value": { "intValue": 1024 }}
+              ],
+              "flags": 1
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

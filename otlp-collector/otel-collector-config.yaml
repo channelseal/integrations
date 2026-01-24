@@ -1,6 +1,16 @@
 # OTLP Collector Config with HTTP Exporter
-# Ref: https://github.com/open-telemetry/opentelemetry-collector/tree/main/exporter/otlphttpexporter
-# Ref: https://github.com/open-telemetry/opentelemetry-collector/blob/main/examples/local/otel-config.yaml
+# Ref:
+#  https://opentelemetry.io/docs/collector/configuration/
+#  https://github.com/open-telemetry/opentelemetry-collector/tree/main/exporter/otlphttpexporter
+#  https://github.com/open-telemetry/opentelemetry-collector/blob/main/examples/local/otel-config.yaml
+
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:13133
+#  pprof:
+#    endpoint: 0.0.0.0:1777
+#  zpages:
+#    endpoint: 0.0.0.0:55679
 
 receivers:
   otlp:
@@ -9,13 +19,19 @@ receivers:
         endpoint: 0.0.0.0:4318  # where your apps send OTLP logs
 
 processors:
+  batch:
+    send_batch_max_size: 8192
+    send_batch_size: 2048
+    timeout: 5s
   memory_limiter:
-    # 75% of maximum memory up to 2G
-    limit_mib: 1536
-    # 25% of limit up to 2G
-    spike_limit_mib: 512
     check_interval: 5s
-  batch: {}
+    limit_percentage: 75
+    spike_limit_percentage: 15
+  attributes/global:
+    actions:
+      - key: service.environment
+        value: production
+        action: upsert
 
 exporters:
   # New-style name in upstream Collector
@@ -26,14 +42,32 @@ exporters:
     # Optional settings
     compression: none #gzip
     encoding: json #proto
+    timeout: 10s
+    sending_queue:
+      enabled: true
+      queue_size: 8000
+    retry_on_failure:
+      enabled: true
+      initial_interval: 5s
+      max_interval: 30s
+      max_elapsed_time: 300s
     tls:
       insecure: true #TODO: make it secure
     headers:
       CS-Org-Id: "10000000" #Replace with your ChannelSeal Organization Id
 
+  debug:
+    verbosity: normal  # or detailed / basic
+
 service:
+  telemetry:
+    logs:
+      level: info
+#    metrics:
+#      address: 0.0.0.0:8888   # Prometheus scrape target for collector self‑metrics[web:68]
+  extensions: [health_check] #pprof, zpages
   pipelines:
     logs:
       receivers: [otlp]
-      processors: [batch]
-      exporters: [otlphttp]
+      processors: [memory_limiter, batch, attributes/global]
+      exporters: [otlphttp, debug]
