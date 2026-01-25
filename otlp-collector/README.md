@@ -11,7 +11,57 @@ OTel [Collector](https://opentelemetry.io/docs/collector/) offers a vendor-agnos
 
 ### API Traffic Logs
 
-ChannelSeal only requires log events of egress API traffic from your gateway, forward proxy, applications, etc. You can send these logs in [OTLP log](https://opentelemetry.io/docs/specs/otel/logs/data-model/) format to ChannelSeal using a Collector configured with an HTTP exporter as shown below
+ChannelSeal only requires log events of egress API traffic from your gateway, forward proxy, applications, etc. You can send these logs in [OTLP log](https://opentelemetry.io/docs/specs/otel/logs/data-model/) format to ChannelSeal using a Collector configured with an HTTP exporter as shown below.
+
+#### Non-human Identifier (NHI)
+
+To relate sensitive data elements found in API traffic between Applications and external services, send an logRecord attribute named `http.request.header.X-Client-Id` with value of NHI. NHI could be an OAuth Client Id, API Key or even user id (for APIs using BASIC authentication).
+
+Following example of OTLP Log event shows how to pass this header as `logRecords.attributes`
+
+```json
+{
+    "resourceLogs": [
+        {
+            "resource": {
+                "attributes": [
+                ]
+            },
+            "scopeLogs": [
+                {
+                    "scope": {
+                        "name": "io.opentelemetry.contrib.http",
+                        "version": "1.0.0"
+                    },
+                    "logRecords": [
+                        {
+                            "timeUnixNano": "1733662080123456789",
+                            "observedTimeUnixNano": "1733662081123456789",
+                            "severityText": "INFO",
+                            "severityNumber": 9,
+                            "body": {
+                                "stringValue": "HTTP POST /clients/api/v4 -> 200"
+                            },
+                            "attributes": [
+                                { "key": "http.url", "value": { "stringValue": "https://api.iban.com/clients/api/v4?api_key=9834hAHx78ba4g8habsdk&country=GB&format=json&bankcode=110377&account=10218962" }
+                                },
+                                { "key": "http.request.header.user-agent", "value": { "stringValue": "Mozilla/5.0" }
+                                },
+                                { "key": "http.request.header.content-type", "value": { "stringValue": "application/json"
+                                } },
+                                { "key": "http.request.header.X-Client-Id", "value": { "stringValue": "041ba848-096c-411d-af05-38f30a0ef42c" }
+                                },
+                                { "key": "http.response.header.content-length", "value": { "intValue": 1024 }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+]
+}
+```
 
 ### Configuration
 
