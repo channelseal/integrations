@@ -40,8 +40,8 @@ exporters:
     #logs_endpoint: "https://api.channelseal.com/otel-http-export-logs" #external
     logs_endpoint: "http://host.docker.internal:8000/otel-http-export-logs" #internal use
     # Optional settings
-    compression: none #gzip
-    encoding: json #proto
+    compression: none
+    encoding: json
     timeout: 10s
     sending_queue:
       enabled: true
