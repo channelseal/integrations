@@ -6,7 +6,18 @@
 
 ChannelSeal can ingest log events of HTTP API traffic from applications, microservices and infrastructure including gateways, proxies, integration brokers, etc. in widely-recognized [OTLP log](https://opentelemetry.io/docs/specs/otel/logs/data-model/) format.
 
-This document describes how to to provide HTTP API traffic metadata to ChannelSeal using the OpenTelemetry Observability protocol and framework.
+
+```mermaid
+graph LR
+    A[Application]-->C[OTel Collector] -->B[ChannelSeal]
+    S[Microservice]-->C[OTel Collector]
+    W[Workflow/ Process]-->C[OTel Collector]
+    AI[Agent Gateway]-->C[OTel Collector]
+    API[API Gateway]-->C[OTel Collector]
+    P[Proxy]-->C[OTel Collector]
+```
+
+This document describes how to provide HTTP API traffic metadata to ChannelSeal using the OpenTelemetry Observability protocol and framework.
 
 ## Collector
 OpenTelmetry [Collector](https://opentelemetry.io/docs/collector/) offers a vendor-agnostic implementation on how to receive, process and export telemetry data from microservices, shared infra and client instrumented code. It also removes the need to run, operate and maintain multiple agents/collectors in order to support open-source telemetry data formats (e.g. Jaeger, Prometheus, etc.) to multiple open-source or commercial back-ends.
@@ -18,6 +29,10 @@ OpenTelmetry [Collector](https://opentelemetry.io/docs/collector/) offers a vend
 
 You can send HTTP API traffic log events in OTLP log format to ChannelSeal via an OTel Collector configured with an exporter [`otlphttpexporter`](https://github.com/open-telemetry/opentelemetry-collector/tree/main/exporter/otlphttpexporter).
 
+```mermaid
+graph LR
+    A[API Caller]-->|OTLP Log Events|C[OTel Collector <br>+ HTTP Exporter] -->|HTTPS|S[ChannelSeal]
+```
 This exporter forwards log events securely to ChannelSeal after required validation, filtering, transformation, etc. 
 
 ### Configuration
@@ -75,11 +90,11 @@ Follow instructions on [Collector Configuration](https://opentelemetry.io/docs/c
 ## Start Container
 
 ```shell
-# Start OTEL collector
+# Start Collector
 docker compose up -d
 ```
 
-## Send OTEL Log Events
+## Send Log Events
 
 Send [sample events](./sample_otel_events.json) using curl.
 
@@ -90,17 +105,28 @@ curl -X POST \
   --data @./sample_otel_events.json
 ```
 
-## Relate API Traffic with Applications
+## API Caller Identification
+
+Integrations are between SaaS or Cloud Services and your applications, services, and automated processes consuming the APIs exposed by those services. In order to identify API callers from API traffic and relate these with sensitive data identified in ChannelSeal, the identity used by the caller is important to provide via log events. 
 
 ### Non-human Identity (NHI)
 
 Non-Human Identities (NHIs) are digital credentials and authentication mechanisms used by machines, applications, services, and automated processes to securely access resources and communicate without human intervention.  They serve as unique "identities" for software, devices, APIs, and workloads, enabling machine-to-machine interactions that power modern IT, cloud, DevOps, and SaaS environments.
 
-Integrations are between SaaS or Cloud Services and applications consuming APIs exposed by those services. Therefore, each message passing through an integration channel would have an NHI, such as an OAuth client id, api key, certificate fingerprint (mutual auth) or even user name if BASIC auth is used for API authentication.
+Each API message passing through an integration channel would have an NHI, such as an OAuth client id, api key, or even user name if BASIC auth is used for API authentication.
 
-To relate sensitive data elements found in API traffic, send a log record with attribute named `http.request.header.X-Client-Id` with value of the NHI. 
 
-Typically, NHI would be easily available at the source, application, where API is called from. NHI could also be retrieved with some instrumentation from an intermediary such as an egress gateway or forward proxy.
+```mermaid
+graph LR
+    A[API Caller]-->|API call with NHI|S[SaaS <br/>/ Cloud service]
+    A[API Caller]-->|Log event including NHI|C[OTel Collector] -->|POST /v1/otel-logs| B[ChannelSeal]
+```
+
+To relate sensitive data elements found in API traffic, send a log record with attribute named `http.request.header.X-Client-Id` with value of the NHI (no secrets). 
+
+#### How to extract NHI?
+
+Typically, NHI would be easily available at the source application, service or process where API is called from. NHI could also be retrieved with some instrumentation from an intermediary such as an egress gateway or forward proxy. If these calls are instrumented, NHIs would be available.
 
 Following example of OTLP Log event shows how to pass this header as `logRecords.attributes`
 

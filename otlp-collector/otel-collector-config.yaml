@@ -24,7 +24,7 @@ processors:
     logs:
       log_record:
         # Drop everything that does NOT look like an HTTP log
-        - 'not IsSet(attributes["http.method"])'
+        - 'attributes["http.method"] == nil'
   memory_limiter:
     check_interval: 5s
     limit_percentage: 75
@@ -43,7 +43,7 @@ exporters:
   # New-style name in upstream Collector
   otlphttp:
     # Base endpoint; Collector will use /v1/logs for logs
-    #logs_endpoint: "https://api.channelseal.com/otel-http-export-logs" #external
+    #logs_endpoint: "https://logs.channelseal.com/v1/otel-logs" #external
     logs_endpoint: "http://host.docker.internal:8000/otel-http-export-logs" #internal use
     # Optional settings
     compression: none
