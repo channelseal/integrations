@@ -19,10 +19,12 @@ receivers:
         endpoint: 0.0.0.0:4318  # where your apps send OTLP logs
 
 processors:
-  batch:
-    send_batch_max_size: 8192
-    send_batch_size: 2048
-    timeout: 5s
+  filter/http_only:
+    error_mode: ignore
+    logs:
+      log_record:
+        # Drop everything that does NOT look like an HTTP log
+        - 'not IsSet(attributes["http.method"])'
   memory_limiter:
     check_interval: 5s
     limit_percentage: 75
@@ -32,6 +34,10 @@ processors:
       - key: service.environment
         value: production
         action: upsert
+  batch:
+    send_batch_max_size: 8192
+    send_batch_size: 2048
+    timeout: 5s
 
 exporters:
   # New-style name in upstream Collector
@@ -69,5 +75,5 @@ service:
   pipelines:
     logs:
       receivers: [otlp]
-      processors: [memory_limiter, batch, attributes/global]
+      processors: [memory_limiter, batch, attributes/global, filter/http_only]
       exporters: [otlphttp, debug]
