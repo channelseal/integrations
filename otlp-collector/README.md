@@ -8,14 +8,24 @@ This document describes how to provide HTTP API traffic metadata to ChannelSeal 
 
 ## Instrumentation
 
-Integrations are between SaaS or Cloud Services and your applications, services, and automated processes that consume the APIs exposed by those services.
+Integrations are between SaaS or Cloud Services and your applications, services, and automated processes that consume the APIs exposed by those services. 
+
+In the diagram below, API consumer would be your application, microservice, workflow or process that consumes APIs offered by service provider(s).
 
 ```mermaid
 graph LR
-    A[API Caller]-->|API Calls|P[SaaS/ Cloud <br> Services]
+    A[API consumer]-->|API Calls|P[SaaS/ Cloud <br> Services]
 ```    
 
-ChannelSeal can ingest log events of HTTP API traffic from API Callers such as applications, microservices, workflow/ processes and infrastructure including gateways, proxies, integration brokers, etc. in widely-recognized [OTLP log](https://opentelemetry.io/docs/specs/otel/logs/data-model/) format.
+Following diagram shows an intermediary involved in an integration. Intermediary could be a gateway, a proxy, an integration broker, enterprise service bus, etc.
+
+```mermaid
+graph LR
+    A[API consumer]-->|API Calls|I[Intermediary]-->|API Calls|P[SaaS/ Cloud <br> Services]
+``` 
+
+
+ChannelSeal can ingest log events of HTTP API traffic from API consumers and integration intermediaries in widely-recognized [OTLP log](https://opentelemetry.io/docs/specs/otel/logs/data-model/) format.
 
 ```mermaid
 graph LR
@@ -28,7 +38,7 @@ graph LR
     P[Proxy]-->C[OTel Collector]
 ```
 
-Using OpenTelemetry, your code can be instrumented in two primary ways:
+Using OpenTelemetry, API consumer or intermediary can be instrumented in two primary ways:
 
 1. [Code-based solutions](https://opentelemetry.io/docs/concepts/instrumentation/code-based/) via official [APIs and SDKs for most languages](https://opentelemetry.io/docs/languages/)
 2. [Zero-code solutions](https://opentelemetry.io/docs/concepts/instrumentation/zero-code/)
@@ -54,9 +64,9 @@ You can send HTTP API traffic log events in OTLP log format to ChannelSeal via a
 
 ```mermaid
 graph LR
-    A[API Caller]-->|OTLP Log Events|C[OTel Collector <br>+ HTTP Exporter] -->|HTTPS|S[ChannelSeal]
+    A[API consumer]-->|OTLP Log Events|C[OTel Collector <br>+ HTTP Exporter] -->|HTTPS|S[ChannelSeal]
 ```
-In the above diagram, API Caller would be your application, microservice, workflow or process that consumes APIs offered by service provider(s).
+
 
 ### Configuration
 
@@ -137,7 +147,7 @@ curl -X POST \
 
 ## Application Attribution
 
-In order to identify API callers from API traffic and relate these with sensitive data identified in ChannelSeal, the identity used by the caller is important to provide via log events. 
+In order to identify API consumers from API traffic and relate these with sensitive data identified in ChannelSeal, the identity used by the consumer is important to provide via log events. 
 
 ### Non-human Identity (NHI)
 
@@ -148,8 +158,8 @@ Each API message passing through an integration channel would have an NHI, such 
 
 ```mermaid
 graph LR
-    A[API Caller]-->|API call with NHI|S[SaaS <br/>/ Cloud service]
-    A[API Caller]-->|Log event including NHI|C[OTel Collector] -->|POST /v1/otel-logs| B[ChannelSeal]
+    A[API consumer]-->|API call with NHI|S[SaaS <br/>/ Cloud service]
+    A[API consumer]-->|Log event including NHI|C[OTel Collector] -->|POST /v1/otel-logs| B[ChannelSeal]
 ```
 
 To relate sensitive data elements found in API traffic, send a log record with attribute named `http.request.header.X-Client-Id` with value of the NHI (no secrets). 
