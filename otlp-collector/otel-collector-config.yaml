@@ -15,8 +15,10 @@ extensions:
 receivers:
   otlp:
     protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
       http:
-        endpoint: 0.0.0.0:4318  # where your apps send OTLP logs
+        endpoint: 0.0.0.0:4318
 
 processors:
   filter/http_only:
@@ -68,7 +70,7 @@ exporters:
 service:
   telemetry:
     logs:
-      level: info
+      level: debug
 #    metrics:
 #      address: 0.0.0.0:8888   # Prometheus scrape target for collector self‑metrics[web:68]
   extensions: [health_check] #pprof, zpages
@@ -77,3 +79,11 @@ service:
       receivers: [otlp]
       processors: [memory_limiter, batch, attributes/global, filter/http_only]
       exporters: [otlphttp, debug]
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, batch, attributes/global, filter/http_only]
+      exporters: [debug]
+    metrics:
+      receivers: [otlp]
+      processors: [memory_limiter, batch, attributes/global, filter/http_only]
+      exporters: [debug]
