@@ -70,7 +70,7 @@ graph LR
 
 ### Configuration
 
-We have provided a [sample configuration](./otel-collector-config.yaml) for an OTel Collector that is configured with required protocol(s), security, encoding, and processing middleware. 
+We have provided a [sample configuration](otel-internal-collector-config.yaml) for an OTel Collector that is configured with required protocol(s), security, encoding, and processing middleware. 
 
 #### Exporter Configuration
 
@@ -93,7 +93,7 @@ ChannelSeal requires your Organization Id in exported OTEL Log Events. Use HTTP 
 
 ```yaml
     headers:
-        CS-Org-Id: "10000000" #Replace with your ChannelSeal Organization Id
+        CS-Org-Id: "Your ChannelSeal Org Id" #Replace with your ChannelSeal Organization Id
 ```
 
 **Example**
@@ -103,23 +103,29 @@ ChannelSeal requires your Organization Id in exported OTEL Log Events. Use HTTP 
 exporters:
     otlphttp:
         # Base endpoint; Collector will use /v1/otel-logs for logs
-        #logs_endpoint: "https://logs.channelseal.com/v1/otel-logs" #external
-        logs_endpoint: "http://host.docker.internal:8000/otel-http-export-logs" #internal use
-        compression: none
-        encoding: json
+        logs_endpoint: "https://logs.channelseal.com/v1/otel-logs"
+        headers:
+          CS-Org-Id: "Your ChannelSeal Org Id" #Replace with your ChannelSeal Organization Id
+        tls:
+            insecure: true #TBD secure
         timeout: 10s
+        read_buffer_size: 123
+        write_buffer_size: 345
         sending_queue:
             enabled: true
-            queue_size: 8000
+            num_consumers: 2
+            queue_size: 10
         retry_on_failure:
             enabled: true
-            initial_interval: 5s
-            max_interval: 30s
-            max_elapsed_time: 300s
-        tls:
-            insecure: true #TODO: make it secure
-        headers:
-            CS-Org-Id: "10000000" #Replace with your ChannelSeal Organization Id
+            initial_interval: 10s
+            randomization_factor: 0.7
+            multiplier: 1.3
+            max_interval: 60s
+            max_elapsed_time: 10m
+        compression: gzip
+        debug:
+            verbosity: normal  # or detailed / basic
+
 ```
 
 Follow instructions on [Collector Configuration](https://opentelemetry.io/docs/collector/configuration/) to change configuration as per your requirements. The OpenTelemetry [Registry](https://opentelemetry.io/ecosystem/registry) provides extensive set of collector components, utilities, and other useful projects in the OpenTelemetry ecosystem.

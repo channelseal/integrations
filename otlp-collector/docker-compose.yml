@@ -1,9 +1,9 @@
 version: "3.8"
 
 services:
-  otel-collector:
-    image: otel/opentelemetry-collector:0.143.0  # or a newer tag
-    container_name: otel-collector
+  cs-otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    container_name: cs-otel-collector
     command: ["--config=/etc/otelcol/config.yaml"]
     volumes:
       - ./otel-collector-config.yaml:/etc/otelcol/config.yaml:ro
