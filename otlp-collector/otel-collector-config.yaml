@@ -21,49 +21,50 @@ receivers:
         endpoint: 0.0.0.0:4318
 
 processors:
-  filter/http_only:
+  filter/http_only: # Drop everything that does NOT look like an HTTP log
     error_mode: ignore
     logs:
       log_record:
-        # Drop everything that does NOT look like an HTTP log
         - 'attributes["http.method"] == nil'
-  memory_limiter:
-    check_interval: 5s
-    limit_percentage: 75
-    spike_limit_percentage: 15
   attributes/global:
     actions:
       - key: service.environment
         value: production
         action: upsert
+  memory_limiter:
+    check_interval: 5s
+    limit_percentage: 75
+    spike_limit_percentage: 15
   batch:
     send_batch_max_size: 8192
     send_batch_size: 2048
     timeout: 5s
+    metadata_keys:
+      - cs-org-id           # preserve this metadata key for the pipeline
 
 exporters:
-  # New-style name in upstream Collector
   otlphttp:
-    # Base endpoint; Collector will use /v1/logs for logs
-    #logs_endpoint: "https://logs.channelseal.com/v1/otel-logs" #external
-    logs_endpoint: "http://host.docker.internal:8000/otel-http-export-logs" #internal use
-    # Optional settings
-    compression: none
-    encoding: json
+    #endpoint: "https://logs.channelseal.com/v1/otel-logs"
+    endpoint: "http://host.docker.internal:14318"
+    headers:
+      CS-Org-Id: "10000000"     # <-- Your ChannelSeal Organization Id
+    tls:
+      insecure: true
     timeout: 10s
+    read_buffer_size: 123
+    write_buffer_size: 345
     sending_queue:
       enabled: true
-      queue_size: 8000
+      num_consumers: 2
+      queue_size: 10
     retry_on_failure:
       enabled: true
-      initial_interval: 5s
-      max_interval: 30s
-      max_elapsed_time: 300s
-    tls:
-      insecure: true #TODO: make it secure
-    headers:
-      CS-Org-Id: "10000000" #Replace with your ChannelSeal Organization Id
-
+      initial_interval: 10s
+      randomization_factor: 0.7
+      multiplier: 1.3
+      max_interval: 60s
+      max_elapsed_time: 10m
+    compression: gzip
   debug:
     verbosity: normal  # or detailed / basic
 
@@ -77,13 +78,13 @@ service:
   pipelines:
     logs:
       receivers: [otlp]
-      processors: [memory_limiter, batch, attributes/global, filter/http_only]
+      processors: [filter/http_only, attributes/global, memory_limiter, batch]
       exporters: [otlphttp, debug]
     traces:
       receivers: [otlp]
-      processors: [memory_limiter, batch, attributes/global, filter/http_only]
+      processors: [filter/http_only, memory_limiter, batch]
       exporters: [debug]
     metrics:
       receivers: [otlp]
-      processors: [memory_limiter, batch, attributes/global, filter/http_only]
+      processors: [memory_limiter, batch]
       exporters: [debug]
