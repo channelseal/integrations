@@ -8,37 +8,31 @@ This document describes how to provide HTTP API traffic metadata to ChannelSeal 
 
 ## Instrumentation
 
+For a system to be observable, it must be instrumented: that is, code from the system’s components must emit signals, such as traces, metrics, and logs.
+
 Integrations are between SaaS or Cloud Services and your applications, services, and automated processes that consume the APIs exposed by those services. 
 
-In the diagram below, API consumer would be your application, microservice, workflow or process that consumes APIs offered by service provider(s).
+### Direct Integration
+
+In the diagram below, API consumer could be your application, microservice, workflow or process that consumes APIs offered by service provider(s) directly.
 
 ```mermaid
 graph LR
     A[API consumer]-->|API Calls|P[SaaS/ Cloud <br> Services]
 ```    
 
-Following diagram shows an intermediary involved in an integration. Intermediary could be a gateway, a proxy, an integration broker, enterprise service bus, etc.
+### Integration via intermediary
+
+Most often, some sort of intermediary is involved in API consumption as shown below. An intermediary could be an API gateway, a proxy, an integration broker, an enterprise service bus, an integration platform (iPaaS), etc.
 
 ```mermaid
 graph LR
     A[API consumer]-->|API Calls|I[Intermediary]-->|API Calls|P[SaaS/ Cloud <br> Services]
 ``` 
 
+### Approaches for instrumentation
 
-ChannelSeal can ingest log events of HTTP API traffic from API consumers and integration intermediaries in widely-recognized [OTLP log](https://opentelemetry.io/docs/specs/otel/logs/data-model/) format.
-
-```mermaid
-graph LR
-    A[Application]-->C[OTel Collector] -->B[ChannelSeal]
-    S[Microservice]-->C[OTel Collector]
-    W[Workflow/ Process]-->C[OTel Collector]
-    I[Integration Broker]-->C[OTel Collector]
-    AI[Agent Gateway]-->C[OTel Collector]
-    API[API Gateway]-->C[OTel Collector]
-    P[Proxy]-->C[OTel Collector]
-```
-
-Using OpenTelemetry, API consumer or intermediary can be instrumented in two primary ways:
+API consumer or intermediary can be instrumented in two primary ways:
 
 1. [Code-based solutions](https://opentelemetry.io/docs/concepts/instrumentation/code-based/) via official [APIs and SDKs for most languages](https://opentelemetry.io/docs/languages/)
 2. [Zero-code solutions](https://opentelemetry.io/docs/concepts/instrumentation/zero-code/)
@@ -54,19 +48,31 @@ OpenTelmetry [Collector](https://opentelemetry.io/docs/collector/) offers a vend
 
 ![OpenTelementry Collector](https://opentelemetry.io/docs/collector/img/otel-collector.svg)
 
+ChannelSeal can ingest log events of HTTP API traffic from API consumers and integration intermediaries in widely-recognized [OTLP log](https://opentelemetry.io/docs/specs/otel/logs/data-model/) format.
+
+```mermaid
+graph LR
+    A[Application]-->C[OTel Collector] -->B[ChannelSeal]
+    S[Microservice]-->C[OTel Collector]
+    W[Workflow/ Process]-->C[OTel Collector]
+    I[Integration Broker]-->C[OTel Collector]
+    AI[Agent Gateway]-->C[OTel Collector]
+    API[API Gateway]-->C[OTel Collector]
+    P[Proxy]-->C[OTel Collector]
+```
+
 ### Receivers
 
 Receivers collect telemetry data from various sources and formats. OTel Collector offers various [Receivers](https://opentelemetry.io/docs/collector/components/receiver/) to integrate enterprise systems.
 
 ### OTLP HTTP Exporter
 
-You can send HTTP API traffic log events in OTLP log format to ChannelSeal via an OTel Collector configured with an exporter [`otlphttpexporter`](https://github.com/open-telemetry/opentelemetry-collector/tree/main/exporter/otlphttpexporter). This exporter forwards log events securely to ChannelSeal after required validation, filtering, transformation, etc.
+You can send HTTP API traffic log events in OTLP log format to ChannelSeal via an OTel Collector configured with an exporter [`otlphttpexporter`](https://github.com/open-telemetry/opentelemetry-collector/tree/main/exporter/otlphttpexporter). This exporter forwards log events securely to ChannelSeal after required validation, filtering, transformation, etc. Events could be sent in batches and with compression.
 
 ```mermaid
 graph LR
     A[API consumer]-->|OTLP Log Events|C[OTel Collector <br>+ HTTP Exporter] -->|HTTPS|S[ChannelSeal]
 ```
-
 
 ### Configuration
 
