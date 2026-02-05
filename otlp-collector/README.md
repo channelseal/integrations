@@ -148,14 +148,28 @@ docker compose up -d
 
 ## Send Log Events
 
-Send [sample events](./sample_otel_events.json) using curl.
+Send [sample log events](sample_otel_log_events.json) using curl.
 
 ```curl
 curl -X POST \
   http://localhost:4318/v1/logs \
   -H "Content-Type: application/json" \
-  --data @./sample_otel_events.json
+  --data @./sample_otel_log_events.json
 ```
+
+Log in to ChannelSeal Portal and check Discovery->Channels to find if there are entries for `http.target` of events sent.
+
+## Send Trace Events
+
+Send [sample trace events](sample_otel_trace_events.json) using curl.
+
+```curl
+curl -X POST \
+  http://localhost:4318/v1/traces \
+  -H "Content-Type: application/json" \
+  --data @./sample_otel_trace_events.json
+```
+Log in to ChannelSeal Portal and check Discovery->Channels to find if there are entries for `http.target` of events sent.
 
 ## Application Attribution
 

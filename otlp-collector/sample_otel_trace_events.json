@@ -1,0 +1,442 @@
+{
+  "resourceSpans": [
+    {
+      "resource": {
+        "attributes": [
+          {
+            "key": "service.name",
+            "value": {
+              "stringValue": "payment-service"
+            }
+          },
+          {
+            "key": "service.version",
+            "value": {
+              "stringValue": "1.2.3"
+            }
+          },
+          {
+            "key": "deployment.environment",
+            "value": {
+              "stringValue": "production"
+            }
+          }
+        ]
+      },
+      "scopeSpans": [
+        {
+          "scope": {
+            "name": "payment-service-tracer",
+            "version": "1.0.0"
+          },
+          "spans": [
+            {
+              "traceId": "5b8aa5a2d2c872e8321cf37308d69df2",
+              "spanId": "051581bf3cb55c13",
+              "parentSpanId": "a3f2e1d4c5b6a789",
+              "name": "HTTP POST stripe.com/v1/charges",
+              "kind": 3,
+              "startTimeUnixNano": "1706918400000000000",
+              "endTimeUnixNano": "1706918400234000000",
+              "attributes": [
+                {
+                  "key": "http.method",
+                  "value": {
+                    "stringValue": "POST"
+                  }
+                },
+                {
+                  "key": "http.url",
+                  "value": {
+                    "stringValue": "https://api.stripe.com/v1/charges"
+                  }
+                },
+                {
+                  "key": "http.status_code",
+                  "value": {
+                    "intValue": 200
+                  }
+                },
+                {
+                  "key": "http.target",
+                  "value": {
+                    "stringValue": "/v1/charges"
+                  }
+                },
+                {
+                  "key": "http.host",
+                  "value": {
+                    "stringValue": "api.stripe.com"
+                  }
+                },
+                {
+                  "key": "http.scheme",
+                  "value": {
+                    "stringValue": "https"
+                  }
+                },
+                {
+                  "key": "net.peer.name",
+                  "value": {
+                    "stringValue": "api.stripe.com"
+                  }
+                },
+                {
+                  "key": "net.peer.port",
+                  "value": {
+                    "intValue": 443
+                  }
+                },
+                {
+                  "key": "http.request_content_length",
+                  "value": {
+                    "intValue": 512
+                  }
+                },
+                {
+                  "key": "http.response_content_length",
+                  "value": {
+                    "intValue": 1024
+                  }
+                },
+                {
+                  "key": "http.request.header.content-type",
+                  "value": {
+                    "stringValue": "application/x-www-form-urlencoded"
+                  }
+                },
+                {
+                  "key": "http.request.header.authorization",
+                  "value": {
+                    "stringValue": "Bearer sk_live_***redacted***"
+                  }
+                },
+                {
+                  "key": "http.request.header.user-agent",
+                  "value": {
+                    "stringValue": "payment-service/1.2.3 (Node.js/18.17.0)"
+                  }
+                },
+                {
+                  "key": "http.request.header.accept",
+                  "value": {
+                    "stringValue": "application/json"
+                  }
+                },
+                {
+                  "key": "http.request.header.accept-encoding",
+                  "value": {
+                    "stringValue": "gzip, deflate"
+                  }
+                },
+                {
+                  "key": "http.request.header.x-request-id",
+                  "value": {
+                    "stringValue": "req_f8a7b9c2d1e34567"
+                  }
+                },
+                {
+                  "key": "http.request.header.idempotency-key",
+                  "value": {
+                    "stringValue": "idem_5b8aa5a2d2c872e8"
+                  }
+                },
+                {
+                  "key": "http.request.header.stripe-version",
+                  "value": {
+                    "stringValue": "2023-10-16"
+                  }
+                },
+                {
+                  "key": "http.response.header.content-type",
+                  "value": {
+                    "stringValue": "application/json; charset=utf-8"
+                  }
+                },
+                {
+                  "key": "http.response.header.date",
+                  "value": {
+                    "stringValue": "Fri, 02 Feb 2024 12:00:00 GMT"
+                  }
+                },
+                {
+                  "key": "http.response.header.server",
+                  "value": {
+                    "stringValue": "nginx"
+                  }
+                },
+                {
+                  "key": "http.response.header.x-stripe-c-cost",
+                  "value": {
+                    "stringValue": "32"
+                  }
+                },
+                {
+                  "key": "http.response.header.stripe-version",
+                  "value": {
+                    "stringValue": "2023-10-16"
+                  }
+                },
+                {
+                  "key": "http.response.header.request-id",
+                  "value": {
+                    "stringValue": "req_f8a7b9c2d1e34567"
+                  }
+                },
+                {
+                  "key": "http.response.header.cache-control",
+                  "value": {
+                    "stringValue": "no-cache, no-store"
+                  }
+                },
+                {
+                  "key": "http.response.header.strict-transport-security",
+                  "value": {
+                    "stringValue": "max-age=31556926; includeSubDomains; preload"
+                  }
+                },
+                {
+                  "key": "http.response.header.x-content-type-options",
+                  "value": {
+                    "stringValue": "nosniff"
+                  }
+                }
+              ],
+              "status": {
+                "code": 1
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "resource": {
+        "attributes": [
+          {
+            "key": "service.name",
+            "value": {
+              "stringValue": "notification-service"
+            }
+          },
+          {
+            "key": "service.version",
+            "value": {
+              "stringValue": "2.1.0"
+            }
+          },
+          {
+            "key": "deployment.environment",
+            "value": {
+              "stringValue": "production"
+            }
+          }
+        ]
+      },
+      "scopeSpans": [
+        {
+          "scope": {
+            "name": "notification-service-tracer",
+            "version": "1.0.0"
+          },
+          "spans": [
+            {
+              "traceId": "7c9bb6b3e3d983f9432de48419e7aef3",
+              "spanId": "162692cf4dc66d24",
+              "parentSpanId": "b4f3e2e5d6c7b89a",
+              "name": "HTTP POST sendgrid.com/v3/mail/send",
+              "kind": 3,
+              "startTimeUnixNano": "1706918401500000000",
+              "endTimeUnixNano": "1706918401789000000",
+              "attributes": [
+                {
+                  "key": "http.method",
+                  "value": {
+                    "stringValue": "POST"
+                  }
+                },
+                {
+                  "key": "http.url",
+                  "value": {
+                    "stringValue": "https://api.sendgrid.com/v3/mail/send"
+                  }
+                },
+                {
+                  "key": "http.status_code",
+                  "value": {
+                    "intValue": 202
+                  }
+                },
+                {
+                  "key": "http.target",
+                  "value": {
+                    "stringValue": "/v3/mail/send"
+                  }
+                },
+                {
+                  "key": "http.host",
+                  "value": {
+                    "stringValue": "api.sendgrid.com"
+                  }
+                },
+                {
+                  "key": "http.scheme",
+                  "value": {
+                    "stringValue": "https"
+                  }
+                },
+                {
+                  "key": "net.peer.name",
+                  "value": {
+                    "stringValue": "api.sendgrid.com"
+                  }
+                },
+                {
+                  "key": "net.peer.port",
+                  "value": {
+                    "intValue": 443
+                  }
+                },
+                {
+                  "key": "http.request_content_length",
+                  "value": {
+                    "intValue": 2048
+                  }
+                },
+                {
+                  "key": "http.response_content_length",
+                  "value": {
+                    "intValue": 0
+                  }
+                },
+                {
+                  "key": "messaging.destination",
+                  "value": {
+                    "stringValue": "user@example.com"
+                  }
+                },
+                {
+                  "key": "http.request.header.content-type",
+                  "value": {
+                    "stringValue": "application/json"
+                  }
+                },
+                {
+                  "key": "http.request.header.authorization",
+                  "value": {
+                    "stringValue": "Bearer SG.***redacted***"
+                  }
+                },
+                {
+                  "key": "http.request.header.user-agent",
+                  "value": {
+                    "stringValue": "notification-service/2.1.0 (Python/3.11.5)"
+                  }
+                },
+                {
+                  "key": "http.request.header.accept",
+                  "value": {
+                    "stringValue": "application/json"
+                  }
+                },
+                {
+                  "key": "http.request.header.accept-encoding",
+                  "value": {
+                    "stringValue": "gzip, deflate, br"
+                  }
+                },
+                {
+                  "key": "http.request.header.x-request-id",
+                  "value": {
+                    "stringValue": "req_c9d8e7f6a5b43210"
+                  }
+                },
+                {
+                  "key": "http.request.header.x-correlation-id",
+                  "value": {
+                    "stringValue": "corr_7c9bb6b3e3d983f9"
+                  }
+                },
+                {
+                  "key": "http.request.header.connection",
+                  "value": {
+                    "stringValue": "keep-alive"
+                  }
+                },
+                {
+                  "key": "http.response.header.content-type",
+                  "value": {
+                    "stringValue": "text/plain; charset=utf-8"
+                  }
+                },
+                {
+                  "key": "http.response.header.date",
+                  "value": {
+                    "stringValue": "Fri, 02 Feb 2024 12:00:01 GMT"
+                  }
+                },
+                {
+                  "key": "http.response.header.server",
+                  "value": {
+                    "stringValue": "nginx"
+                  }
+                },
+                {
+                  "key": "http.response.header.x-message-id",
+                  "value": {
+                    "stringValue": "msg_abc123xyz789"
+                  }
+                },
+                {
+                  "key": "http.response.header.x-ratelimit-limit",
+                  "value": {
+                    "stringValue": "1000"
+                  }
+                },
+                {
+                  "key": "http.response.header.x-ratelimit-remaining",
+                  "value": {
+                    "stringValue": "847"
+                  }
+                },
+                {
+                  "key": "http.response.header.x-ratelimit-reset",
+                  "value": {
+                    "stringValue": "1706922000"
+                  }
+                },
+                {
+                  "key": "http.response.header.access-control-allow-origin",
+                  "value": {
+                    "stringValue": "*"
+                  }
+                },
+                {
+                  "key": "http.response.header.access-control-allow-methods",
+                  "value": {
+                    "stringValue": "POST, GET, OPTIONS"
+                  }
+                },
+                {
+                  "key": "http.response.header.connection",
+                  "value": {
+                    "stringValue": "keep-alive"
+                  }
+                },
+                {
+                  "key": "http.response.header.strict-transport-security",
+                  "value": {
+                    "stringValue": "max-age=31536000; includeSubDomains"
+                  }
+                }
+              ],
+              "status": {
+                "code": 1
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
