@@ -71,7 +71,7 @@ exporters:
 service:
   telemetry:
     logs:
-      level: debug
+      level: info
 #    metrics:
 #      address: 0.0.0.0:8888   # Prometheus scrape target for collector self‑metrics[web:68]
   extensions: [health_check] #pprof, zpages
@@ -82,9 +82,5 @@ service:
       exporters: [otlphttp, debug]
     traces:
       receivers: [otlp]
-      processors: [filter/http_only, memory_limiter, batch]
-      exporters: [debug]
-    metrics:
-      receivers: [otlp]
-      processors: [memory_limiter, batch]
-      exporters: [debug]
+      processors: [filter/http_only, attributes/global, memory_limiter, batch]
+      exporters: [otlphttp, debug]
