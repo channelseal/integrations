@@ -44,8 +44,8 @@ processors:
 
 exporters:
   otlphttp:
-    #endpoint: "https://logs.channelseal.com/v1/otel-logs"
-    endpoint: "http://host.docker.internal:14318"
+    endpoint: "https://logs.channelseal.com/v1/otel"
+    #endpoint: "http://host.docker.internal:14318"
     headers:
       CS-Org-Id: "10000000"     # <-- Your ChannelSeal Organization Id
     tls:
