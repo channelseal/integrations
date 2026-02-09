@@ -53,6 +53,7 @@ processors:
 
 exporters:
   otlphttp:
+    # Base endpoint; For UAT, use https://logs-uat.channelseal.com/v1/otel
     endpoint: "https://logs.channelseal.com/v1/otel"
     headers:
       CS-Org-Id: "10000000"     # <-- Your ChannelSeal Organization Id
