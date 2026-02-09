@@ -173,7 +173,6 @@ Use `oauth2client` extension to authenticate to ChannelSeal OTel endpoint. This 
 ```yaml
 exporters:
   otlphttp:
-    endpoint: "https://logs.channelseal.com/v1/otel"
     auth:
       authenticator: oauth2client
     tls:
@@ -196,7 +195,7 @@ ChannelSeal requires your Organization Id in exported OTEL Log Events. Use HTTP 
 
 exporters:
     otlphttp:
-        # Base endpoint; Collector will use /v1/otel-logs for logs
+        # Base endpoint; For UAT, use https://logs-uat.channelseal.com/v1/otel
         endpoint: "https://logs.channelseal.com/v1/otel"
         headers:
           CS-Org-Id: "Your ChannelSeal Org Id" #Replace with your ChannelSeal Organization Id
