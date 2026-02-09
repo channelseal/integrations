@@ -12,6 +12,15 @@ extensions:
 #  zpages:
 #    endpoint: 0.0.0.0:55679
 
+  #https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/extension/oauth2clientauthextension/README.md
+  oauth2client:
+    client_id: someclientid  # <-- Your client id
+    client_secret: <secret>       # <-- Your client secret
+    token_url: https://dev-channelseal.us.auth0.com/oauth/token
+    endpoint_params:
+      audience: https://api.channelseal.com
+      grant_type: client_credentials
+
 receivers:
   otlp:
     protocols:
@@ -45,11 +54,12 @@ processors:
 exporters:
   otlphttp:
     endpoint: "https://logs.channelseal.com/v1/otel"
-    #endpoint: "http://host.docker.internal:14318"
     headers:
       CS-Org-Id: "10000000"     # <-- Your ChannelSeal Organization Id
+    auth:
+      authenticator: oauth2client
     tls:
-      insecure: true
+      insecure: false
     timeout: 10s
     read_buffer_size: 123
     write_buffer_size: 345
@@ -74,7 +84,7 @@ service:
       level: info
 #    metrics:
 #      address: 0.0.0.0:8888   # Prometheus scrape target for collector self‑metrics[web:68]
-  extensions: [health_check] #pprof, zpages
+  extensions: [health_check, oauth2client] #pprof, zpages
   pipelines:
     logs:
       receivers: [otlp]
