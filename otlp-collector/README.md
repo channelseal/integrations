@@ -199,8 +199,11 @@ exporters:
         endpoint: "https://logs.channelseal.com/v1/otel"
         headers:
           CS-Org-Id: "Your ChannelSeal Org Id" #Replace with your ChannelSeal Organization Id
+        auth:
+            authenticator: oauth2client
         tls:
-            insecure: true #TBD secure
+            insecure: false
+            ca_file: /path/to/ca.pem # <-- ask for CA certs used by ChannelSeal
         timeout: 10s
         read_buffer_size: 123
         write_buffer_size: 345
