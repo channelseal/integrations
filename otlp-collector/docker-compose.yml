@@ -15,3 +15,5 @@ services:
       - "13133:13133" # health_check extension
       - "8888:8888"   # Collector metrics
     restart: unless-stopped
+    env_file:
+      - ./.env
