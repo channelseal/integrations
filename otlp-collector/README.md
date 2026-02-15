@@ -157,9 +157,9 @@ Use `oauth2client` extension to authenticate to ChannelSeal OTel endpoint. This 
 ```
   extensions:
     oauth2client:
-      client_id: someclientid  # <-- Your client id
-      client_secret: <secret>       # <-- Your client secret
-      token_url: https://dev-channelseal.us.auth0.com/oauth/token
+    client_id: ${env:OAUTH_CLIENT_ID}  # <-- Your client id
+    client_secret: ${env:OAUTH_CLIENT_SECRET}       # <-- Your client secret, from environment
+    token_url: ${env:OAUTH_TOKEN_URL} #https://<>.channelseal.com/oauth/token, replace <> with uat or api
       endpoint_params:
         audience: https://api.channelseal.com
         grant_type: client_credentials
@@ -230,6 +230,15 @@ Follow instructions on [Collector Configuration](https://opentelemetry.io/docs/c
 ChannelSeal would provide `processor` and `exporter` in future for seamless and quick integration to Collector.
 
 ## Start Container
+
+### Set Environment
+
+`cp .env.template .env`
+
+Make changes as required in your `.env`.
+
+`export $(cat .env)`
+
 
 ```shell
 # Start Collector
