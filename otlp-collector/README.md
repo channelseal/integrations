@@ -83,7 +83,7 @@ Most often, some sort of intermediary is involved in API consumption as shown be
 ```mermaid
 graph LR
     A[API consumer]-->|API Calls|I[Intermediary]-->|API Calls|P[SaaS/ Cloud <br> Services]
-``` 
+```
 
 ### Approaches for instrumentation
 
@@ -105,30 +105,53 @@ OpenTelmetry [Collector](https://opentelemetry.io/docs/collector/) offers a vend
 
 ![OpenTelementry Collector](https://opentelemetry.io/docs/collector/img/otel-collector.svg)
 
-ChannelSeal can ingest log or trace events of HTTP API traffic from API consumers and integration intermediaries.
+### Receivers
+
+Receivers collect telemetry data from various sources and formats. OTel Collector offers various different kinds of Receivers to integrate enterprise systems. Checkout receivers [available](https://opentelemetry.io/docs/collector/components/receiver/).
+
+#### File Logs
+For legacy enterprise applications writing logs to files, [filelogreceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/filelogreceiver), [syslogreceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/syslogreceiver) or other suitable receiver could be used to ingest those logs into the Collector.
 
 ```mermaid
 graph LR
-    A[Application]-->C[OTel Collector] -->B[ChannelSeal]
+    A[Application]-->|Write Logs|D[Log File]
+    D-->|Read Logs |C[OTel Collector <br> + Filelog Receiver]
+```
+
+#### Via FluentBit or similar
+
+If the Collector does not have the necessary file reading and parsing capabilities, another log collection agent, such as [FluentBit](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/fluentforwardreceiver) can collect the logs, then send the logs to the Collector.
+
+Check [Legacy First-Party Applications Logs](https://opentelemetry.io/docs/specs/otel/logs/#legacy-first-party-applications-logs) for more details.
+
+```mermaid
+graph LR
+    A[Application]-->|Write Logs|D[file, stdout, pipe]
+    D-->|Read Logs|R[FluentBit]-->|Forward Protocol|C[OTel Collector]
+```
+The benefit of using an intermediary medium is that how logs are produced and where they are written by the application requires no or minimal changes. The downside is that it requires the often non-trivial log file reading and parsing functionality.
+
+### OTLP HTTP Exporter
+
+You can send HTTP API traffic events in OTLP [log](https://opentelemetry.io/docs/specs/otel/logs/data-model/) or [trace](https://opentelemetry.io/docs/specs/semconv/http/http-spans/) format to ChannelSeal via an OTel Collector configured with an exporter [`otlphttpexporter`](https://github.com/open-telemetry/opentelemetry-collector/tree/main/exporter/otlphttpexporter). This exporter would forward the OTel events securely (auth and transport) to ChannelSeal after required validation, filtering, transformation, etc. Events could be sent in batches and with compression making the process more efficient and scaleable.
+
+```mermaid
+graph LR
+    A[API consumer]-->|OTLP Events|C[OTel Collector <br>+ HTTP Exporter] -->|HTTPS|S[ChannelSeal]
+```
+
+ChannelSeal can ingest traffic events for HTTP APIs from applications, microservices, workflows/ business processes, integration brokers, API gateways, Agent gateways, proxies, etc. via OTel Collector.
+
+```mermaid
+flowchart LR
+
+    A[Application]-->C[OTel Collector] -->|HTTPS|B[ChannelSeal]
     S[Microservice]-->C[OTel Collector]
-    W[Workflow/ Process]-->C[OTel Collector]
+    W[Workflow/ Business Process]-->C[OTel Collector]
     I[Integration Broker]-->C[OTel Collector]
     AI[Agent Gateway]-->C[OTel Collector]
     API[API Gateway]-->C[OTel Collector]
     P[Proxy]-->C[OTel Collector]
-```
-
-### Receivers
-
-Receivers collect telemetry data from various sources and formats. OTel Collector offers various [Receivers](https://opentelemetry.io/docs/collector/components/receiver/) to integrate enterprise systems.
-
-### OTLP HTTP Exporter
-
-You can send HTTP API traffic events in OTLP [log](https://opentelemetry.io/docs/specs/otel/logs/data-model/) or [trace](https://opentelemetry.io/docs/specs/semconv/http/http-spans/) format to ChannelSeal via an OTel Collector configured with an exporter [`otlphttpexporter`](https://github.com/open-telemetry/opentelemetry-collector/tree/main/exporter/otlphttpexporter). This exporter forwards the OTel events securely to ChannelSeal after required validation, filtering, transformation, etc. Events could be sent in batches and with compression.
-
-```mermaid
-graph LR
-    A[API consumer]-->|OTLP Log Events|C[OTel Collector <br>+ HTTP Exporter] -->|HTTPS|S[ChannelSeal]
 ```
 
 ### Configuration
@@ -284,7 +307,7 @@ Each API message passing through an integration channel would have an NHI, such 
 ```mermaid
 graph LR
     A[API consumer]-->|API call with NHI|S[SaaS <br/>/ Cloud service]
-    A[API consumer]-->|Log event including NHI|C[OTel Collector] -->|POST /v1/otel-logs| B[ChannelSeal]
+    A[API consumer]-->|Log event including NHI|C[OTel Collector] -->|HTTPS| B[ChannelSeal]
 ```
 
 To relate sensitive data elements found in API traffic, send a log record with attribute named `http.request.header.X-Client-Id` with value of the NHI (no secrets). 
