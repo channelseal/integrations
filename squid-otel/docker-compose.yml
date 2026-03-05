@@ -1,0 +1,53 @@
+version: "3.9"
+
+services:
+  squid:
+    image: ubuntu/squid:latest
+    container_name: squid-proxy
+    restart: unless-stopped
+    ports:
+      - "3128:3128"
+    volumes:
+      - ./squid/squid.conf:/etc/squid/squid.conf:ro
+      - squid-logs:/var/log/squid   # named volume instead of bind mount
+    depends_on:
+      fix-perms:
+        condition: service_completed_successfully
+    
+  fix-perms:
+    image: busybox
+    command: sh -c "chown -R 13:13 /var/log/squid && chmod -R 755 /var/log/squid"
+    # 13:13 = proxy user/group (Debian/Ubuntu based images)
+    volumes:
+      - squid-logs:/var/log/squid
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    container_name: otel-collector
+    restart: unless-stopped
+    command: ["--config=/etc/otel/config.yaml"]
+    ports:
+      - "4317:4317"   # OTLP gRPC
+      - "4318:4318"   # OTLP HTTP
+      - "8888:8888"   # Collector metrics (Prometheus)
+      - "8889:8889"   # Prometheus exporter
+      - "13133:13133" # Health check
+    volumes:
+      - ./otel/config.yaml:/etc/otel/config.yaml:ro
+      - squid-logs:/var/log/squid:ro  # collector reads the same volume
+    depends_on:
+      fix-perms:
+        condition: service_completed_successfully
+    environment:
+      - HTTP_PROXY=http://squid:3128
+      - HTTPS_PROXY=http://squid:3128
+      - NO_PROXY=localhost,127.0.0.1
+    networks:
+      - proxy-net
+
+networks:
+  proxy-net:
+    driver: bridge
+
+volumes:
+  squid-logs:

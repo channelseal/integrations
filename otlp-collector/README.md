@@ -190,6 +190,8 @@ Use `oauth2client` extension to authenticate to ChannelSeal OTel endpoint. This 
   service:    
     extensions: [health_check, oauth2client]
 ```
+**⚠️ Warning**
+Never share your client credentials or commit them to version control. Use environment variables to store sensitive credentials.
 
 *Extension*
 
