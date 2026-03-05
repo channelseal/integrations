@@ -1,0 +1,174 @@
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:13133
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+  filelog:
+    include:
+      - /var/log/squid/access.log
+    start_at: end
+    operators:
+      - type: json_parser
+        on_error: send              # send the raw line rather than drop it
+        timestamp:
+          parse_from: attributes.ts
+          layout_type: epoch
+          layout: s.ms
+      # For CONNECT requests: url is "host:port" format
+      - type: regex_parser
+        parse_from: attributes.url
+        parse_to: attributes.parsed_url
+        regex: '^(?P<host>[^:]+):(?P<port>\d+)$'
+        if: 'attributes.method == "CONNECT"'
+        on_error: send
+
+      - type: add
+        field: attributes.scheme
+        value: "https"
+        if: 'attributes.method == "CONNECT"'
+
+      - type: regex_parser
+        parse_from: attributes.url
+        parse_to: attributes.parsed_url
+        regex: '^(?P<scheme>[a-zA-Z][a-zA-Z0-9+\-.]*):\/\/(?P<host>[^\/:\?]+)(?::(?P<port>\d+))?(?P<path>\/[^\?]*)?(?:\?(?P<query>.*))?$'
+        on_error: send              # if URL is "-" or malformed, skip
+        if: 'attributes.url != nil and attributes.url != "-"'
+
+      - type: move
+        from: attributes.parsed_url.scheme
+        to: attributes.scheme
+        if: 'attributes.parsed_url != nil'
+
+      - type: move
+        from: attributes.parsed_url.host
+        to: attributes.url_host
+        if: 'attributes.parsed_url != nil'
+
+      - type: move
+        from: attributes.parsed_url.port
+        to: attributes.url_port
+        if: 'attributes.parsed_url != nil'
+
+      - type: move
+        from: attributes.parsed_url.path
+        to: attributes.url_path
+        if: 'attributes.parsed_url != nil'
+
+      - type: move
+        from: attributes.parsed_url.query
+        to: attributes.url_query
+        if: 'attributes.parsed_url != nil'
+
+      - type: remove
+        field: attributes.parsed_url
+        if: 'attributes.parsed_url != nil'
+
+      - type: regex_parser
+        parse_from: attributes.authorization
+        parse_to: attributes.auth_parsed
+        regex: '^(?P<auth_scheme>\w+)\s+.*$'
+        on_error: send
+        if: 'attributes.authorization != nil and attributes.authorization != "-"'
+
+      - type: move
+        from: attributes.auth_parsed.auth_scheme
+        to: attributes.auth_scheme
+        if: 'attributes.auth_parsed != nil'
+
+      - type: remove
+        field: attributes.authorization
+        if: 'attributes.authorization != nil'
+
+      - type: remove
+        field: attributes.auth_parsed
+        if: 'attributes.auth_parsed != nil'
+
+      - type: severity_parser
+        parse_from: attributes.status
+        on_error: send
+        if: 'attributes.status != nil and attributes.status != "-"'
+        mapping:
+          info:  "2xx"
+          warn:  "3xx"
+          warn2: "4xx"
+          error: "5xx"
+
+      - type: add
+        field: resource["service.name"]
+        value: squid-proxy
+      - type: add
+        field: resource["log.source"]
+        value: squid-access-log
+
+processors:
+  batch:
+    timeout: 5s
+    send_batch_size: 1024
+
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 512
+    spike_limit_mib: 128
+
+  resourcedetection:
+    detectors: [env, system]
+    timeout: 5s
+
+  transform/http_semconv:
+    log_statements:
+      - context: log
+        statements:
+          - set(attributes["http.method"],         attributes["method"])
+          - set(attributes["http.url"],            attributes["url"])
+          - set(attributes["http.scheme"],         attributes["scheme"])
+          - set(attributes["http.host"],           attributes["url_host"])
+          - set(attributes["http.target"],         attributes["url_path"])
+          - set(attributes["http.user_agent"],     attributes["user_agent"])
+          - set(attributes["net.peer.name"],       attributes["url_host"])
+          - set(attributes["client.address"],      attributes["client"])
+
+          # Cast numeric strings to int where value is not "-"
+          - set(attributes["http.status_code"], Int(attributes["status"]))
+            where attributes["status"] != "-"
+          - set(attributes["http.request_content_type"],  attributes["req_content_type"])
+            where attributes["req_content_type"] != "-"
+          - set(attributes["http.response_content_type"], attributes["resp_content_type"])
+            where attributes["resp_content_type"] != "-"
+
+
+exporters:
+  # Debug / stdout (replace with your real backend)
+  debug:
+    verbosity: detailed
+
+  # Example: export to a remote OTLP endpoint via Squid
+  # otlp/remote:
+  #   endpoint: https://your-backend.example.com:4317
+  #   headers:
+  #     authorization: "Bearer ${OTLP_TOKEN}"
+
+  # Example: Prometheus metrics endpoint
+  prometheus:
+    endpoint: "0.0.0.0:8889"
+    namespace: otel
+
+service:
+  extensions: [health_check]
+  pipelines:
+    traces:
+      receivers:  [otlp]
+      processors: [memory_limiter, resourcedetection, batch]
+      exporters:  [debug]
+
+
+    logs:
+      receivers:  [otlp, filelog]
+      processors: [memory_limiter, transform/http_semconv, batch]
+      exporters:  [debug]
