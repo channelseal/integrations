@@ -1,6 +1,6 @@
 # Squid Forward Proxy + OpenTelemetry Collector
 
-A Docker Compose setup that runs a Squid forward proxy and ships its access logs to an OpenTelemetry Collector for structured telemetry.
+This document describes how to provide HTTP API traffic metadata from Squid forward proxy to ChannelSeal using the OpenTelemetry observability protocol and framework.
 
 ---
 
@@ -25,7 +25,7 @@ A Docker Compose setup that runs a Squid forward proxy and ships its access logs
                         └────────┬─────────┘
                                  │
                         downstream exporters
-                        (debug / OTLP)
+                        (debug / OTLP to ChannelSeal)
 ```
 
 ---
@@ -209,7 +209,7 @@ The `deny` rule must appear **before** `http_access allow localnet`.
 ### Exporting telemetry to a remote backend (`otel/config.yaml`)
 #### Exporter Configuration
 
-Following section describes the configuration for OTLP HTTP Exporter.
+Following section describes the configuration for OTLP HTTP Exporter. You can directly export from OTel Collector to ChannelSeal after filtering out non API traffic.
 
 **Endpoint**
 
@@ -217,41 +217,6 @@ Use the following endpoint of ChannelSeal to send OTel events.
 
 ```yaml
     endpoint: "https://logs.channelseal.com/v1/otel"
-```
-
-**Security**
-
-
-Use `oauth2client` extension to authenticate to ChannelSeal OTel endpoint. This extension provides OAuth2 Client Credentials flow authenticator for HTTP exporter. The extension fetches and refreshes the token after expiry automatically.
-
-*Extension*
-
-```
-  extensions:
-    oauth2client:
-    client_id: ${env:OAUTH_CLIENT_ID}  # <-- Your client id
-    client_secret: ${env:OAUTH_CLIENT_SECRET}       # <-- Your client secret, from environment
-    token_url: ${env:OAUTH_TOKEN_URL} #https://<>.channelseal.com/oauth/token, replace <> with uat or api
-      endpoint_params:
-        audience: https://api.channelseal.com
-        grant_type: client_credentials
-      
-  service:    
-    extensions: [health_check, oauth2client]
-```
-**⚠️ Warning**
-Never share your client credentials or commit them to version control. Use environment variables to store sensitive credentials.
-
-*Extension*
-
-```yaml
-exporters:
-  otlphttp:
-    auth:
-      authenticator: oauth2client
-    tls:
-      insecure: false
-      ca_file: /path/to/ca.pem # <-- ask for CA certs used by ChannelSeal
 ```
 
 **Organization Id**
@@ -297,7 +262,142 @@ exporters:
             verbosity: normal  # or detailed / basic
 
 ```
+---
 
+## Security Guidelines
+
+### Network exposure
+
+**Never expose Squid port `3128` to the public internet.** It is an open forward proxy — anyone who can reach it can route traffic through your host.
+
+```yaml
+# Bind to localhost or an internal interface only, not 0.0.0.0
+ports:
+  - "127.0.0.1:3128:3128"
+```
+
+Similarly, restrict OTel collector ports to internal interfaces in production:
+
+```yaml
+ports:
+  - "127.0.0.1:4317:4317"
+  - "127.0.0.1:4318:4318"
+```
+
+### OTel Collector running as root
+
+The collector is configured with `user: "0:0"` to read the shared log volume. This is acceptable for local development but should be hardened for production — use the `fix-perms` + UID `10001` approach instead:
+
+```yaml
+fix-perms:
+  command: sh -c "chown -R 13:13 /var/log/squid && chmod -R 755 /var/log/squid && chown -R 10001:10001 /var/log/squid"
+
+otel-collector:
+  user: "10001:10001"   # default otelcol-contrib UID, no longer root
+```
+
+### Restrict allowed source networks
+
+The default `localnet` ACL allows the entire RFC-1918 space. Tighten this to only the Docker subnet or subnets that should use the proxy:
+
+```squid
+# Replace broad RFC-1918 ranges with your actual subnet
+acl localnet src 172.20.0.0/24   # your Docker bridge subnet only
+```
+
+Find your Docker subnet with:
+```bash
+docker network inspect  | grep Subnet
+```
+
+### Allowlist instead of blocklist
+
+The current config allows all traffic except explicitly blocked domains. For stricter environments, invert this to a default-deny allowlist:
+
+```squid
+acl allowed_domains dstdomain .github.com
+acl allowed_domains dstdomain .npmjs.org
+acl allowed_domains dstdomain .pypi.org
+
+http_access allow localnet allowed_domains
+http_access deny all   # deny everything else
+```
+
+### Sensitive headers in logs
+
+The following headers are captured by the `logformat` directive and written to disk. Ensure log files and telemetry exports are access-controlled:
+
+| Header | Risk | Mitigation |
+|--------|------|------------|
+| `Authorization` | Bearer tokens, Basic credentials | Raw value is dropped by OTel; only scheme is kept |
+| `Cookie` | Session tokens | Not captured in this config — do not add `%{Cookie}>h` |
+| `X-Forwarded-For` | Client IP leakage | Logged but `forwarded_for off` prevents Squid from propagating it upstream |
+
+Never add `%{Cookie}>h` or `%{Set-Cookie}<h` to the `logformat` line.
+
+### Authentication for OTel Export
+
+#### 1. Use Long-lived Bearer Token
+
+```bash
+# .env  (never commit this file)
+OTLP_TOKEN=your-token-here
+```
+
+```yaml
+# docker-compose.yml
+environment:
+  - OTLP_TOKEN=${OTLP_TOKEN}
+```
+
+```yaml
+# otel/config.yaml
+headers:
+  authorization: "Bearer ${OTLP_TOKEN}"
+```
+
+
+
+#### 2. Use `oauth2client` extension
+
+Check out how you can use `oauth2client` extension and [export OTel `log`](../../../otlp-collector/README.md#Configuration) to ChannelSeal.
+
+#### Secrets management
+
+**⚠️ Warning**
+Never share your client credentials or commit them to version control. Use environment variables to store sensitive credentials. Do not hardcode credentials in `docker-compose.yml` or `otel/config.yaml`. Use a `.env` file and reference variables:
+
+Add `.env` to `.gitignore`:
+
+```bash
+echo ".env" >> .gitignore
+```
+
+### TLS for OTel export
+
+Always use TLS when exporting telemetry to a remote backend. Never send traces, metrics, or logs over plain HTTP outside of localhost:
+
+```yaml
+exporters:
+  otlp/remote:
+    endpoint: https://your-backend.example.com:4317
+    tls:
+      insecure: false           # default, but be explicit
+      ca_file: /etc/otel/ca.crt  # if using a private CA
+```
+
+### Log rotation and retention
+
+Squid rotates logs based on `logfile_rotate 7` (7 generations). Ensure the volume does not grow unbounded in production — add an explicit size limit or external log rotation policy. Logs contain URLs and client IPs which may be subject to data retention regulations.
+
+### Image pinning
+
+The current config uses `latest` tags. Pin to specific digest versions in production to prevent unexpected changes:
+
+```yaml
+image: ubuntu/squid:6.6-24.04_beta    # pin to a specific tag
+image: otel/opentelemetry-collector-contrib:0.144.0  # pin to a known version
+```
 ---
 
 ## Troubleshooting

@@ -6,7 +6,7 @@ services:
     container_name: squid-proxy
     restart: unless-stopped
     ports:
-      - "3128:3128"
+      - "127.0.0.1:3128:3128"
     volumes:
       - ./squid/squid.conf:/etc/squid/squid.conf:ro
       - squid-logs:/var/log/squid   # named volume instead of bind mount
@@ -27,10 +27,8 @@ services:
     restart: unless-stopped
     command: ["--config=/etc/otel/config.yaml"]
     ports:
-      - "4317:4317"   # OTLP gRPC
-      - "4318:4318"   # OTLP HTTP
-      - "8888:8888"   # Collector metrics (Prometheus)
-      - "8889:8889"   # Prometheus exporter
+      - "127.0.0.1:4317:4317"
+      - "127.0.0.1:4318:4318"
       - "13133:13133" # Health check
     volumes:
       - ./otel/config.yaml:/etc/otel/config.yaml:ro
