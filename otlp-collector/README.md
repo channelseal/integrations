@@ -2,7 +2,7 @@
 
 [OpenTelemetry](https://opentelemetry.io/) (OTel), is a vendor-neutral open source Observability framework for instrumenting, generating, collecting, and exporting telemetry data such as traces, metrics, and logs. As an industry-standard, OpenTelemetry is supported by more than 90 observability vendors, integrated by many libraries, services, and apps, and adopted by numerous end users .
 
-![OpenTelmetry Framework](https://opentelemetry.io/img/otel-diagram.svg)
+![OpenTelmetry Framework](https://www.channelseal.com/blog/assets/images/otel-eco-diagram.png)
 
 This document describes how to provide HTTP API traffic metadata to ChannelSeal using the OpenTelemetry observability protocol and framework.
 
@@ -103,7 +103,7 @@ The OpenTelemetry [Registry](https://opentelemetry.io/ecosystem/registry) provid
 ## Collector
 OpenTelmetry [Collector](https://opentelemetry.io/docs/collector/) offers a vendor-agnostic implementation on how to receive, process and export telemetry data from microservices, shared infra and client instrumented code. It also removes the need to run, operate and maintain multiple agents/collectors in order to support open-source telemetry data formats (e.g. Jaeger, Prometheus, etc.) to multiple open-source or commercial back-ends.
 
-![OpenTelementry Collector](https://opentelemetry.io/docs/collector/img/otel-collector.svg)
+![OpenTelementry Collector](https://www.channelseal.com/blog/assets/images/otel-collector-channelseal.png)
 
 ### Receivers
 

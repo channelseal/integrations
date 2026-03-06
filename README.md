@@ -14,8 +14,8 @@ Note: This is an experimental feature being actively developed.
 
 ## Integrations
 
-* [OpenTelemetry](./otlp-collector/README.md) export your HTTP API specific OpenTelemetry signals to ChannelSeal
-* [Squid-OpenTelemetry](./squid-otel/README.md) export logs of HTTP API calls from [Squid](https://www.squid-cache.org/) forward proxy to ChannelSeal via OpenTelemetry Collector
+* [OpenTelemetry](./otlp-collector/README.md) to export your HTTP API specific OpenTelemetry signals to ChannelSeal
+* [Squid](proxy/squid/squid-otel/README.md) to export logs of HTTP API traffic from [Squid forward proxy](https://www.squid-cache.org/) to ChannelSeal via OpenTelemetry Collector
 
 ## Getting Started
 
