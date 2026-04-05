@@ -154,6 +154,37 @@ flowchart LR
     P[Proxy]-->C[OTel Collector]
 ```
 
+### Set environment
+
+You can set environment as following.
+
+`cp env.template .env`
+
+1. Set exporter endpoint in `.env` to send OTel events to ChannelSeal.
+
+**UAT**
+```sh
+EXPORTER_ENDPOINT=https://uat.channelseal.com/telemetry/otel
+```
+
+**Production**
+
+```sh
+EXPORTER_ENDPOINT=https://app.channelseal.com/telemetry/otel
+```
+
+2. Obtain OAuth credentials to send telemetry from your ChannelSeal account. Update the following variables in your `.env`
+
+```
+OAUTH_CLIENT_ID=${OAUTH_CLIENT_ID}
+OAUTH_CLIENT_SECRET=${OAUTH_CLIENT_SECRET}
+```
+
+Run
+
+`export $(cat .env)`
+
+
 ### Configuration
 
 We have provided a [sample configuration](otel-internal-collector-config.yaml) for an OTel Collector that is configured with required protocol(s), security, encoding, and processing middleware. This configuration would send OTel events (logs/traces) to ChannelSeal securely and in batches.
@@ -161,14 +192,6 @@ We have provided a [sample configuration](otel-internal-collector-config.yaml) f
 #### Exporter Configuration
 
 Following section describes the configuration for OTLP HTTP Exporter.
-
-**Endpoint**
-
-Use the following endpoint of ChannelSeal to send OTel events.
-
-```yaml
-    endpoint: "https://logs.channelseal.com/v1/otel"
-```
 
 **Security**
 
@@ -182,11 +205,11 @@ Use `oauth2client` extension to authenticate to ChannelSeal OTel endpoint. This 
     oauth2client:
     client_id: ${env:OAUTH_CLIENT_ID}  # <-- Your client id
     client_secret: ${env:OAUTH_CLIENT_SECRET}       # <-- Your client secret, from environment
-    token_url: ${env:OAUTH_TOKEN_URL} #https://<>.channelseal.com/oauth/token, replace <> with uat or api
+    token_url: ${env:OAUTH_TOKEN_URL}
       endpoint_params:
-        audience: https://api.channelseal.com
+        audience: https://telemetry.channelseal.com
         grant_type: client_credentials
-      
+        scope: import:telemetry 
   service:    
     extensions: [health_check, oauth2client]
 ```
@@ -220,8 +243,7 @@ ChannelSeal requires your Organization Id in exported OTEL Log Events. Use HTTP 
 
 exporters:
     otlphttp:
-        # Base endpoint; For UAT, use https://logs-uat.channelseal.com/v1/otel
-        endpoint: "https://logs.channelseal.com/v1/otel"
+        endpoint: ${env:EXPORTER_ENDPOINT}
         headers:
           CS-Org-Id: "Your ChannelSeal Org Id" #Replace with your ChannelSeal Organization Id
         auth:
@@ -255,15 +277,6 @@ Follow instructions on [Collector Configuration](https://opentelemetry.io/docs/c
 ChannelSeal would provide `processor` and `exporter` in future for seamless and quick integration to Collector.
 
 ## Start Container
-
-### Set Environment
-
-`cp .env.template .env`
-
-Make changes as required in your `.env`.
-
-`export $(cat .env)`
-
 
 ```shell
 # Start Collector
