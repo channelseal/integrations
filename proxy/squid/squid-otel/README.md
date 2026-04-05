@@ -209,59 +209,8 @@ The `deny` rule must appear **before** `http_access allow localnet`.
 ### Exporting telemetry to a remote backend (`otel/config.yaml`)
 #### Exporter Configuration
 
-Following section describes the configuration for OTLP HTTP Exporter. You can directly export from OTel Collector to ChannelSeal after filtering out non API traffic.
+Check out how to use the `exporter` configuaration to [export](../../../otlp-collector/otel-collector-config.yaml)  OTel `log` to ChannelSeal.
 
-**Endpoint**
-
-Use the following endpoint of ChannelSeal to send OTel events.
-
-```yaml
-    endpoint: "https://logs.channelseal.com/v1/otel"
-```
-
-**Organization Id**
-
-ChannelSeal requires your Organization Id in exported OTEL Log Events. Use HTTP custom header `CS-Org-Id` to provide your organization id in the `exporter` configuration.
-
-```yaml
-    headers:
-        CS-Org-Id: "Your ChannelSeal Org Id" #Replace with your ChannelSeal Organization Id
-```
-
-**Example**
-
-```yaml
-
-exporters:
-    otlphttp:
-        # Base endpoint; For UAT, use https://logs-uat.channelseal.com/v1/otel
-        endpoint: "https://logs.channelseal.com/v1/otel"
-        headers:
-          CS-Org-Id: "Your ChannelSeal Org Id" #Replace with your ChannelSeal Organization Id
-        auth:
-            authenticator: oauth2client
-        tls:
-            insecure: false
-            ca_file: /path/to/ca.pem # <-- ask for CA certs used by ChannelSeal
-        timeout: 10s
-        read_buffer_size: 123
-        write_buffer_size: 345
-        sending_queue:
-            enabled: true
-            num_consumers: 2
-            queue_size: 10
-        retry_on_failure:
-            enabled: true
-            initial_interval: 10s
-            randomization_factor: 0.7
-            multiplier: 1.3
-            max_interval: 60s
-            max_elapsed_time: 10m
-        compression: gzip
-        debug:
-            verbosity: normal  # or detailed / basic
-
-```
 ---
 
 ## Security Guidelines
@@ -358,20 +307,14 @@ headers:
 
 
 
-#### 2. Use `oauth2client` extension
+#### 2. Use `oauth2client` extension (preferred)
 
-Check out how you can use `oauth2client` extension and [export OTel `log`](../../../otlp-collector/README.md#Configuration) to ChannelSeal.
+Check out how to use the `oauth2client` extension to [export](../../../otlp-collector/otel-collector-config.yaml)  OTel `log` to ChannelSeal.
 
 #### Secrets management
 
 **⚠️ Warning**
 Never share your client credentials or commit them to version control. Use environment variables to store sensitive credentials. Do not hardcode credentials in `docker-compose.yml` or `otel/config.yaml`. Use a `.env` file and reference variables:
-
-Add `.env` to `.gitignore`:
-
-```bash
-echo ".env" >> .gitignore
-```
 
 ### TLS for OTel export
 
@@ -385,6 +328,8 @@ exporters:
       insecure: false           # default, but be explicit
       ca_file: /etc/otel/ca.crt  # if using a private CA
 ```
+Check out how to use the `exporter` configuaration to [export](../../../otlp-collector/otel-collector-config.yaml)  OTel `log` to ChannelSeal.
+
 
 ### Log rotation and retention
 
