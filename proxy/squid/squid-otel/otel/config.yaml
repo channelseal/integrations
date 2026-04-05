@@ -1,3 +1,7 @@
+#
+# Use esp receivers:filelog, processors:transform from this configuration and exporter, oauth2client, etc. from https://github.com/channelseal/integrations/blob/main/otlp-collector/otel-collector-config.yaml
+# to send telemetry from Squid to ChannelSeal
+#
 extensions:
   health_check:
     endpoint: 0.0.0.0:13133
@@ -145,19 +149,12 @@ processors:
 
 exporters:
   # Debug / stdout (replace with your real backend)
+
   debug:
     verbosity: detailed
 
-  # Example: export to a remote OTLP endpoint via Squid
-  # otlp/remote:
-  #   endpoint: https://your-backend.example.com:4317
-  #   headers:
-  #     authorization: "Bearer ${OTLP_TOKEN}"
-
-  # Example: Prometheus metrics endpoint
-  #  prometheus:
-  #    endpoint: "0.0.0.0:8889"
-  #    namespace: otel
+  # Use exporter configuration from https://github.com/channelseal/integrations/blob/main/otlp-collector/otel-collector-config.yaml
+  # to send telemetry from Squid to ChannelSeal
 
 service:
   extensions: [health_check]
