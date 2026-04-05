@@ -184,6 +184,11 @@ Run
 
 `export $(cat .env)`
 
+Add `.env` to `.gitignore`:
+
+```bash
+echo ".env" >> .gitignore
+```
 
 ### Configuration
 
