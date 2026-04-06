@@ -61,6 +61,7 @@ exporters:
       authenticator: oauth2client
     tls:
       insecure: false
+      ca_file: /etc/otelcol/cs-ca.pem # <-- ChannelSeal's ca cert
     timeout: 10s
     read_buffer_size: 123
     write_buffer_size: 345
