@@ -6,6 +6,7 @@ services:
     command: ["--config=/etc/otelcol/config.yaml"]
     volumes:
       - ./otel-collector-config.yaml:/etc/otelcol/config.yaml:ro
+      - ./security/cs-ca.pem:/etc/otelcol/cs-ca.pem:ro
     ports:
       # OTLP HTTP receiver for your apps to send logs
       - "4317:4317"
